@@ -20,34 +20,34 @@ import (
 	"context"
 	"fmt"
 
-	autoscalingv1alpha1 "github.com/gardener/hvpa-controller/api/v1alpha1"
+	autoscalingv1alpha1 "github.com/gardener/hvpa-controller/apis/autoscaling/v1alpha1"
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/ginkgo/extensions/table"
 	. "github.com/onsi/gomega"
-	vpa_api "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/apis/autoscaling.k8s.io/v1"
+	autoscaling "k8s.io/api/autoscaling/v2beta1"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 	"sigs.k8s.io/controller-runtime/pkg/controller/controllerutil"
 )
 
-var _ = Describe("#Adopt VPA", func() {
+var _ = Describe("#Adopt HPA", func() {
 
-	DescribeTable("##AdoptVPA",
+	DescribeTable("##AdoptHPA",
 		func(instance *autoscalingv1alpha1.Hvpa) {
 			deploytest := target.DeepCopy()
 			// Overwrite name
-			deploytest.Name = "deploy-test-3"
+			deploytest.Name = "deploy-test-2"
 
 			c := mgr.GetClient()
 			// Create the test deployment
 			Expect(c.Create(context.TODO(), deploytest)).To(Succeed())
 
-			// Create the Hvpa object and expect the Reconcile and VPA to be created
+			// Create the Hvpa object and expect the Reconcile and HPA to be created
 			Expect(c.Create(context.TODO(), instance)).To(Succeed())
 			defer c.Delete(context.TODO(), instance)
 
 			hasSingleChildFn := func() error {
 				num := 0
-				objList := &vpa_api.VerticalPodAutoscalerList{}
+				objList := &autoscaling.HorizontalPodAutoscalerList{}
 				if err := c.List(context.TODO(), objList); err != nil {
 					return err
 				}
@@ -66,42 +66,42 @@ var _ = Describe("#Adopt VPA", func() {
 
 			Eventually(hasSingleChildFn, timeout).Should(Succeed())
 
-			// Create new VPA for same HVPA
-			newVpa, err := getVpaFromHvpa(instance)
+			// Create new HPA for same HVPA
+			newHpa, err := getHpaFromHvpa(instance)
 			Expect(err).NotTo(HaveOccurred())
-			err = c.Create(context.TODO(), newVpa)
+			err = c.Create(context.TODO(), newHpa)
 			Expect(err).NotTo(HaveOccurred())
 
-			// Eventually one of the VPAs should be garbage collected
+			// Eventually one of the HPAs should be garbage collected
 			Eventually(hasSingleChildFn, timeout).Should(Succeed())
 
-			// Create new VPA for same HVPA
-			newVpa, err = getVpaFromHvpa(instance)
+			// Create new HPA for same HVPA
+			newHpa, err = getHpaFromHvpa(instance)
 			Expect(err).NotTo(HaveOccurred())
 
-			Expect(controllerutil.SetControllerReference(instance, newVpa, mgr.GetScheme())).To(Succeed())
+			Expect(controllerutil.SetControllerReference(instance, newHpa, mgr.GetScheme())).To(Succeed())
 
 			// Replace the labels. The HVPA controller should remove the owner reference
 			label := make(map[string]string)
-			label["orphanKeyVpa"] = "orphanValueVpa"
-			newVpa.SetLabels(label)
+			label["orphanKeyHpa"] = "orphanValueHpa"
+			newHpa.SetLabels(label)
 
-			Expect(c.Create(context.TODO(), newVpa)).To(Succeed())
+			Expect(c.Create(context.TODO(), newHpa)).To(Succeed())
 
-			// Eventually the owner ref from VPA should be removed by the HVPA controller
+			// Eventually the owner ref from HPA should be removed by the HVPA controller
 			Eventually(func() error {
-				vpaList := &vpa_api.VerticalPodAutoscalerList{}
-				c.List(context.TODO(), vpaList, client.MatchingLabels(label))
-				for _, obj := range vpaList.Items {
+				hpaList := &autoscaling.HorizontalPodAutoscalerList{}
+				c.List(context.TODO(), hpaList, client.MatchingLabels(label))
+				for _, obj := range hpaList.Items {
 					for _, ref := range obj.GetOwnerReferences() {
 						if ref.UID == instance.GetUID() {
-							return fmt.Errorf("Error: VPA with label %v not released by HVPA %v", label, instance.Name)
+							return fmt.Errorf("Error: HPA with label %v not released by HVPA %v", label, instance.Name)
 						}
 					}
 				}
 				return nil
 			}, timeout).Should(Succeed())
 		},
-		Entry("vpa", newHvpa("hvpa-3", "deploy-test-3", "label-3", minChange)),
+		Entry("hpa", newHvpa("hvpa-2", "deploy-test-2", "label-2", minChange)),
 	)
 })
