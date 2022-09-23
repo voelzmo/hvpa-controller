@@ -14,16 +14,13 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-package v1alpha1
+package v1alpha2
 
 import (
-	autoscaling "k8s.io/api/autoscaling/v2beta1"
+	autoscalingv2 "k8s.io/api/autoscaling/v2"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	vpa_api "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/apis/autoscaling.k8s.io/v1"
 )
-
-// EDIT THIS FILE!  THIS IS SCAFFOLDING FOR YOU TO OWN!
-// NOTE: json tags are required.  Any new fields you add must have json tags for the fields to be serialized.
 
 // VpaTemplateSpec defines the spec for VPA
 type VpaTemplateSpec struct {
@@ -83,7 +80,7 @@ type HpaTemplateSpec struct {
 	// more information about how each type of metric must respond.
 	// If not set, the default metric will be set to 80% average CPU utilization.
 	// +optional
-	Metrics []autoscaling.MetricSpec `json:"metrics,omitempty" protobuf:"bytes,3,rep,name=metrics"`
+	Metrics []autoscalingv2.MetricSpec `json:"metrics,omitempty" protobuf:"bytes,3,rep,name=metrics"`
 }
 
 // WeightBasedScalingInterval defines the interval of replica counts in which VpaWeight is applied to VPA scaling
@@ -218,7 +215,7 @@ type HvpaSpec struct {
 	WeightBasedScalingIntervals []WeightBasedScalingInterval `json:"weightBasedScalingIntervals,omitempty"`
 
 	// TargetRef points to the controller managing the set of pods for the autoscaler to control
-	TargetRef *autoscaling.CrossVersionObjectReference `json:"targetRef"`
+	TargetRef *autoscalingv2.CrossVersionObjectReference `json:"targetRef"`
 
 	// MaintenanceTimeWindow contains information about the time window for maintenance operations.
 	// +optional
@@ -330,7 +327,6 @@ type HpaStatus struct {
 // +kubebuilder:object:root=true
 // +kubebuilder:subresource:status
 // +kubebuilder:subresource:scale:specpath=.spec.replicas,statuspath=.status.replicas,selectorpath=.status.targetSelector
-// +kubebuilder:storageversion
 type Hvpa struct {
 	metav1.TypeMeta   `json:",inline"`
 	metav1.ObjectMeta `json:"metadata,omitempty"`
@@ -347,9 +343,6 @@ type HvpaList struct {
 	Items           []Hvpa `json:"items"`
 }
 
-/*func init() {
+func init() {
 	SchemeBuilder.Register(&Hvpa{}, &HvpaList{})
-}*/
-
-// Hub marks this version as the API conversion Hub
-func (*Hvpa) Hub() {}
+}
