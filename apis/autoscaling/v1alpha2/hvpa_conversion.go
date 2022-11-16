@@ -47,6 +47,7 @@ func (src *Hvpa) ConvertTo(dstRaw conversion.Hub) error {
 			ContainerResource: Convert_autoscalingv2_ContainerResourceMetricSource_To_autoscalingv2beta1_ContainerResourceMetricSource(metric.ContainerResource),
 			External:          Convert_autoscalingv2_ExternalMetricSource_To_autoscalingv2beta1_ExternalMetricSource(metric.External),
 		}
+		//Convert_v2beta1_ResourceMetricSource_To_autoscaling_ResourceMetricSource
 		dst.Spec.Hpa.Template.Spec.Metrics = append(dst.Spec.Hpa.Template.Spec.Metrics, ms)
 	}
 
