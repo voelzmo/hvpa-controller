@@ -5,7 +5,6 @@ metadata:
     api-approved.kubernetes.io: unapproved, temporarily squatting
     cert-manager.io/inject-ca-from: $(CERTIFICATE_NAMESPACE)/$(CERTIFICATE_NAME)
     controller-gen.kubebuilder.io/version: v0.9.2
-  creationTimestamp: null
   name: hvpas.autoscaling.k8s.io
 spec:
   conversion:
