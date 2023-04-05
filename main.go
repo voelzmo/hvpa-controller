@@ -18,8 +18,6 @@ package main
 
 import (
 	"flag"
-	k8sautoscalingv2 "k8s.io/kubernetes/pkg/apis/autoscaling/v2"
-	k8sautoscalingv2beta1 "k8s.io/kubernetes/pkg/apis/autoscaling/v2beta1"
 	"os"
 
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -29,6 +27,8 @@ import (
 	clientgoscheme "k8s.io/client-go/kubernetes/scheme"
 	_ "k8s.io/client-go/plugin/pkg/client/auth/gcp"
 	klogv2 "k8s.io/klog/v2"
+	k8sautoscalingv2 "k8s.io/kubernetes/pkg/apis/autoscaling/v2"
+	k8sautoscalingv2beta1 "k8s.io/kubernetes/pkg/apis/autoscaling/v2beta1"
 	ctrl "sigs.k8s.io/controller-runtime"
 
 	autoscalingv1alpha1 "github.com/gardener/hvpa-controller/apis/autoscaling/v1alpha1"
